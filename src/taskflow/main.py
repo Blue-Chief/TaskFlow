@@ -1,12 +1,19 @@
 from typing import Annotated
+from enum import Enum
 from fastapi import FastAPI, Body, Query, Path
 from pydantic import BaseModel, Field
+
+class TaskStatus(str, Enum):
+    todo = "todo"
+    in_progress = "in_progress"
+    completed = "completed"
+    cancelled = "cancelled"
 
 app = FastAPI()
 
 tasks_db = [
-    {"id": 1, "title": "Learn FastAPI", "status": "In Progress", "priority": "high"},
-    {"id": 2, "title": "Setup PostgreSQL", "status": "Not started", "priority": "medium"},
+    {"id": 1, "title": "Learn FastAPI", "status": "in_progress", "priority": "high"},
+    {"id": 2, "title": "Setup PostgreSQL", "status": "todo", "priority": "medium"},
     {"id": 3, "title": "Write Tests", "status": "completed", "priority": "low"},
 ]
 
@@ -20,7 +27,7 @@ def health_status():
 
 @app.get("/tasks")
 def list_task(
-    status: Annotated[str | None, Query()] = None,
+    status: Annotated[TaskStatus | None, Query()] = None,
     priority: Annotated[str | None, Query()] = None,
     skip: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 10,
