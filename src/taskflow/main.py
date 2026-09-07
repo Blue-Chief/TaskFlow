@@ -17,6 +17,12 @@ tasks_db = [
     {"id": 3, "title": "Write Tests", "status": "completed", "priority": "low"},
 ]
 
+class TaskCreate(BaseModel):
+    title: str
+    description: str | None = None
+
+next_id = 4
+
 @app.get("/")
 def home():
     return {"message" : "Welcome to TaskFlow"}
@@ -43,4 +49,11 @@ def list_task(
 def read_task(task_id : Annotated[int, Path(gt=0)]):
     task_lookup = {task["id"]: task for task in tasks_db} 
     return task_lookup.get(task_id, None)
-    
+
+@app.post("/tasks", status_code=201)
+def create_task(task: TaskCreate):
+    global next_id
+    new_task = {"id": next_id, "title": task.title, "description": task.description}
+    tasks_db.append(new_task)
+    next_id += 1
+    return new_task   
