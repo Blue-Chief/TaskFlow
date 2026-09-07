@@ -56,4 +56,4 @@ def create_task(task: TaskCreate):
     new_task = {"id": next_id, "title": task.title, "description": task.description}
     tasks_db.append(new_task)
     next_id += 1
-    return new_task   
+    return new_task  
