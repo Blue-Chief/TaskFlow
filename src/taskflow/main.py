@@ -18,8 +18,8 @@ tasks_db = [
 ]
 
 class TaskCreate(BaseModel):
-    title: str
-    description: str | None = None
+    title: str = Field(min_length=3, max_length=200)
+    description: str | None = Field(default=None, max_length=2000)
 
 next_id = 4
 
@@ -56,4 +56,4 @@ def create_task(task: TaskCreate):
     new_task = {"id": next_id, "title": task.title, "description": task.description}
     tasks_db.append(new_task)
     next_id += 1
-    return new_task
+    return new_task   
