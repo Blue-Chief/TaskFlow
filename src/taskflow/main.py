@@ -1,6 +1,6 @@
 from typing import Annotated
 from enum import Enum
-from fastapi import FastAPI, Body, Query, Path
+from fastapi import FastAPI, Body, Query, Path, HTTPException
 from pydantic import BaseModel, Field
 
 class TaskStatus(str, Enum):
@@ -12,7 +12,7 @@ class TaskStatus(str, Enum):
 app = FastAPI()
 
 tasks_db = [
-    {"id": 1, "title": "Learn FastAPI", "status": "in_progress", "priority": "high"},
+    {"id": 1, "title": "Learn FastAPI", "status": "in_progress", "priority": "high", "assigned_to": {"id":5, "username":"blue_chief"}},
     {"id": 2, "title": "Setup PostgreSQL", "status": "todo", "priority": "medium"},
     {"id": 3, "title": "Write Tests", "status": "completed", "priority": "low"},
 ]
@@ -22,6 +22,16 @@ class TaskCreate(BaseModel):
     description: str | None = Field(default=None, max_length=2000)
 
 next_id = 4
+
+class User(BaseModel):
+    id: int
+    username: str
+
+class TaskOut(BaseModel):
+    id: int
+    title: str
+    description: str | None 
+    assigned_to: User | None = None
 
 @app.get("/")
 def home():
@@ -48,7 +58,11 @@ def list_task(
 @app.get("/tasks/{task_id}")
 def read_task(task_id : Annotated[int, Path(gt=0)]):
     task_lookup = {task["id"]: task for task in tasks_db} 
-    return task_lookup.get(task_id, None)
+    result = task_lookup.get(task_id, None)
+    if result:
+        return result
+    else:
+        raise HTTPException(status_code=404, detail="Task not found")
 
 @app.post("/tasks", status_code=201)
 def create_task(task: TaskCreate):
